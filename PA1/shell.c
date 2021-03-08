@@ -254,7 +254,7 @@ int shellExecuteInput(char **args)
   }
   // 2. Otherwise, check if args[0] is in any of our builtin_commands, and that it is NOT cd, help, exit, or usage.
   int check = 0;
-  for (int i = 0; i < numOfBuiltinFunctions; i++){
+  for (int i = 0; i < numOfBuiltinFunctions(); i++){
     if (strcmp(args[0], builtin_commands[i]) == 0){
       check = 1;
       break;
@@ -305,8 +305,8 @@ int shellExecuteInput(char **args)
         }
       } else if (pid > 0){
         waitpid(pid, stat_loc, WUNTRACED);
-        printf("pid : %i\n", pid);
-        printf("return value : %i\n", return_value);
+        // printf("pid : %i\n", pid);
+        // printf("return value : %i\n", return_value);
         return 1;
       }
     }
@@ -365,7 +365,6 @@ char **shellTokenizeInput(char *line)
   int index = 0;
 
   do {
-    printf("%s", arg);
     args[index] = arg;
     index++;
   }
