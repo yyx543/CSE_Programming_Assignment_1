@@ -1,1 +1,10 @@
 .DS_Store
+
+# linux executables
+customshell
+checkdaemon
+display
+listdir
+countline
+find
+listdirall

@@ -268,10 +268,15 @@ char *shellReadLine(void)
   // read one line from stdin using getline()
 
   // 1. Allocate a memory space to contain the string of input from stdin using malloc. Malloc should return a char* that persists even after this function terminates.
+  char *buffer = malloc(sizeof(char) * SHELL_BUFFERSIZE);
   // 2. Check that the char* returned by malloc is not NULL
+  if (buffer != NULL){
   // 3. Fetch an entire line from input stream stdin using getline() function. getline() will store user input onto the memory location allocated in (1)
+    size_t temp_size = SHELL_BUFFERSIZE;
+    getline(&buffer, &temp_size, stdin);
   // 4. Return the char*
-
+    return buffer;
+  }
   return NULL;
 }
 
@@ -289,13 +294,15 @@ char **shellTokenizeInput(char *line)
   // 4. Return the char **
   char** args = malloc(sizeof(line));   // QN why is it 8?
   if (!args) { exit(EXIT_FAILURE); }  // ERROR
-  char* arg;
+  char* arg = strtok(line, SHELL_INPUT_DELIM);
   int index = 0;
 
-  while (!(arg = strtok(line, SHELL_INPUT_DELIM))) {
+  do {
+    printf("%s", arg);
     args[index] = arg;
     index++;
   }
+  while (arg = strtok(NULL, SHELL_INPUT_DELIM));
 
   return args;
 }
@@ -330,16 +337,12 @@ void shellLoop(void)
 
 int main(int argc, char **argv)
 {
- 
- printf("Shell Run successful. Running now: \n");
- 
- char* line = shellReadLine();
- printf("The fetched line is : %s \n", line);
- 
- char** args = shellTokenizeInput(line);
- printf("The first token is %s \n", args[0]);
- printf("The second token is %s \n", args[1]);
- 
- return 0;
+
+  printf("Shell Run successful. Running now: \n");
+
+  // Run command loop
+  shellLoop();
+
+  return 0;
 }
 
