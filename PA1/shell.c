@@ -359,8 +359,19 @@ char **shellTokenizeInput(char *line)
   // 2. Check that char ** that is returend by malloc is not NULL
   // 3. Tokenize the *line using strtok() function
   // 4. Return the char **
+  char** args = malloc(sizeof(line));   // QN why is it 8?
+  if (!args) { exit(EXIT_FAILURE); }  // ERROR
+  char* arg = strtok(line, SHELL_INPUT_DELIM);
+  int index = 0;
 
-  return NULL;
+  do {
+    printf("%s", arg);
+    args[index] = arg;
+    index++;
+  }
+  while (arg = strtok(NULL, SHELL_INPUT_DELIM));
+
+  return args;
 }
 
 /**
@@ -396,8 +407,9 @@ int main(int argc, char **argv)
 
   printf("Shell Run successful. Running now: \n");
 
-  char* line = shellReadLine();
-  printf("The fetched line is : %s \n", line);
+  // Run command loop
+  shellLoop();
 
   return 0;
 }
+
