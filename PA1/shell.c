@@ -280,6 +280,7 @@ int shellExecuteInput(char **args)
 
       if (pid == -1){
         printf("unsuccessful fork");
+    // 4. For the child process, execute the appropriate functions depending on the command in args[0]. Pass char ** args to the function.
       } else if ( pid == 0){
         if (strcmp(args[0], builtin_commands[4]) == 0){
           return_value = shellDisplayFile(args);
@@ -303,6 +304,8 @@ int shellExecuteInput(char **args)
           return_value = shellCheckDaemon(args);
           exit(1);
         }
+    // 5. For the parent process, wait for the child process to complete and fetch the child's return value.
+    // 6. Return the child's return value to the caller of shellExecuteInput
       } else if (pid > 0){
         waitpid(pid, stat_loc, WUNTRACED);
         // printf("pid : %i\n", pid);
@@ -315,15 +318,6 @@ int shellExecuteInput(char **args)
     printf("command doesn't exist");
     return 1;
   }
-  
-  
-  // 4. For the child process, execute the appropriate functions depending on the command in args[0]. Pass char ** args to the function.
-  
-  // 5. For the parent process, wait for the child process to complete and fetch the child's return value.
-  
-  // 6. Return the child's return value to the caller of shellExecuteInput
-  
-  
 }
 
 /**
