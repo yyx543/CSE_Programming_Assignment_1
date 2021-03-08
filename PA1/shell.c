@@ -268,10 +268,15 @@ char *shellReadLine(void)
   // read one line from stdin using getline()
 
   // 1. Allocate a memory space to contain the string of input from stdin using malloc. Malloc should return a char* that persists even after this function terminates.
+  char *buffer = malloc(sizeof(char) * SHELL_BUFFERSIZE);
   // 2. Check that the char* returned by malloc is not NULL
+  if (buffer != NULL){
   // 3. Fetch an entire line from input stream stdin using getline() function. getline() will store user input onto the memory location allocated in (1)
+    size_t temp_size = SHELL_BUFFERSIZE;
+    getline(&buffer, &temp_size, stdin);
   // 4. Return the char*
-
+    return buffer;
+  }
   return NULL;
 }
 
@@ -324,8 +329,8 @@ int main(int argc, char **argv)
 
   printf("Shell Run successful. Running now: \n");
 
-  // Run command loop
-  shellLoop();
+  char* line = shellReadLine();
+  printf("The fetched line is : %s \n", line);
 
   return 0;
 }
