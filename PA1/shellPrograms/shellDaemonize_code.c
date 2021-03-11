@@ -13,51 +13,62 @@
 #include "shellPrograms.h"
 
 //TODO: change to appropriate path
-char *path = "/Users/natalie_agus/Dropbox/50.005 Computer System Engineering/2020/PA1 Makeshell Daemon/PA1/logfile_test.txt";
+char *path = "./logfile_test.txt";
 
 /*This function summons a daemon process out of the current process*/
-static int create_daemon()
-{
-
+static int create_daemon() {
     /* TASK 7 */
     // Incantation on creating a daemon with fork() twice
 
     // 1. Fork() from the parent process
     pid_t pid = fork();
+    printf("changing file descriptors: forked\t");
 
-    if (pid == -1){
+    if (pid == -1) {
         printf("Fork failed!\n");
 
-    } else if ( pid == 0){
-    // 3. On child process (this is intermediate process), call setsid() so that the child becomes session leader to lose the controlling TTY
+    } else if (pid == 0) {
+        printf("why can't you see me?");
+        // 3. On child process (this is intermediate process), call setsid() so that the child becomes session leader to lose the controlling TTY
         setsid();
 
-    // 4. Ignore SIGCHLD, SIGHUP
+        // 4. Ignore SIGCHLD, SIGHUP
         signal(SIGCHLD, SIG_IGN);
         signal(SIGHUP, SIG_IGN);
 
-    // 5. Fork() again, parent (the intermediate) process terminates
+        // 5. Fork() again, parent (the intermediate) process terminates
         pid_t pid2 = fork();
-        if (pid2 == -1){
+        if (pid2 == -1) {
             printf("Fork 2 failed!\n");
 
-        } else if (pid2 == 0){
-    // 6. Child process (the daemon) set new file permissions using umask(0). Daemon's PPID at this point is 1 (the init)
+        } else if (pid2 == 0) {
+            // 6. Child process (the daemon) set new file permissions using umask(0). Daemon's PPID at this point is 1 (the init)
             umask(0);
-    // 7. Change working directory to root
+            // 7. Change working directory to root
             chdir("/");
-    // 8. Close all open file descriptors using sysconf(_SC_OPEN_MAX) and redirect fd 0,1,2 to /dev/null
-            for (int x = sysconf(_SC_OPEN_MAX); x >= 0; x--){
+            // 8. Close all open file descriptors using sysconf(_SC_OPEN_MAX) and redirect fd 0,1,2 to /dev/null
+            for (int x = sysconf(_SC_OPEN_MAX); x >= 0; x--) {
                 close(x);
             }
-            int fd0 = open("/dev/null", O_RDWR);
-            int fd1 = dup(0);
-            int fd2 = dup(0);
 
+            // Either:
+            close(STDIN_FILENO);
+            close(STDOUT_FILENO);
+            close(STDERR_FILENO);
+            open("/dev/null", O_RDONLY);
+            open("/dev/null", O_WRONLY);
+            open("/dev/null", O_RDWR);
+
+            // Or:
+            // int df = open("/dev/null", O_RDWR);
+            // dup2(df, STDIN_FILENO);
+            // dup2(df, STDOUT_FILENO);
+            // dup2(df, STDERR_FILENO);
+            // close(df);
         }
 
     } else if (pid > 0) {
-    // 2. Close parent with exit(1)
+        // 2. Close parent with exit(1)
         exit(1);
     }
     // 9. Return to main
@@ -65,31 +76,25 @@ static int create_daemon()
     return 1;
 }
 
-static int daemon_work()
-{
-
+static int daemon_work() {
     int num = 0;
     FILE *fptr;
 
     //write PID of daemon in the beginning
     fptr = fopen(path, "a");
-    if (fptr == NULL)
-    {
+    if (fptr == NULL) {
         return EXIT_FAILURE;
     }
 
     fprintf(fptr, "%d with FD %d\n", getpid(), fileno(fptr));
     fclose(fptr);
 
-    while (1)
-    {
-
+    while (1) {
         //use appropriate location if you are using MacOS or Linux
         //TODO: Change to appropriate path
         fptr = fopen(path, "a");
 
-        if (fptr == NULL)
-        {
+        if (fptr == NULL) {
             return EXIT_FAILURE;
         }
 
@@ -106,14 +111,13 @@ static int daemon_work()
 
     return EXIT_SUCCESS;
 }
-int main(int argc, char** args)
-{
-   create_daemon();
-  
-   /* Open the log file */
-   openlog ("customdaemon", LOG_PID, LOG_DAEMON);
-   syslog (LOG_NOTICE, "Daemon started.");
-   closelog();
- 
-   return daemon_work();
+int main(int argc, char **args) {
+    create_daemon();
+
+    /* Open the log file */
+    openlog("customdaemon", LOG_PID, LOG_DAEMON);
+    syslog(LOG_NOTICE, "Daemon started.");
+    closelog();
+
+    return daemon_work();
 }
