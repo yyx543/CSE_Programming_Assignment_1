@@ -23,13 +23,43 @@ static int create_daemon()
     // Incantation on creating a daemon with fork() twice
 
     // 1. Fork() from the parent process
-    // 2. Close parent with exit(1)
+    pid_t pid = fork();
+
+    if (pid == -1){
+        printf("Fork failed!\n");
+
+    } else if ( pid == 0){
     // 3. On child process (this is intermediate process), call setsid() so that the child becomes session leader to lose the controlling TTY
+        setsid();
+
     // 4. Ignore SIGCHLD, SIGHUP
+        signal(SIGCHLD, SIG_IGN);
+        signal(SIGHUP, SIG_IGN);
+
     // 5. Fork() again, parent (the intermediate) process terminates
+        pid_t pid2 = fork();
+        if (pid2 == -1){
+            printf("Fork 2 failed!\n");
+
+        } else if (pid2 == 0){
     // 6. Child process (the daemon) set new file permissions using umask(0). Daemon's PPID at this point is 1 (the init)
+            umask(0);
     // 7. Change working directory to root
+            chdir("/");
     // 8. Close all open file descriptors using sysconf(_SC_OPEN_MAX) and redirect fd 0,1,2 to /dev/null
+            for (int x = sysconf(_SC_OPEN_MAX); x >= 0; x--){
+                close(x);
+            }
+            int fd0 = open("/dev/null", O_RDWR);
+            int fd1 = dup(0);
+            int fd2 = dup(0);
+
+        }
+
+    } else if (pid > 0) {
+    // 2. Close parent with exit(1)
+        exit(1);
+    }
     // 9. Return to main
 
     return 1;
@@ -76,14 +106,14 @@ static int daemon_work()
 
     return EXIT_SUCCESS;
 }
-int main(int argc, char **args)
+int main(int argc, char** args)
 {
-    create_daemon();
-
-    /* Open the log file */
-    openlog("customdaemon", LOG_PID, LOG_DAEMON);
-    syslog(LOG_NOTICE, "Daemon started.");
-    closelog();
-
-    return daemon_work();
+   create_daemon();
+  
+   /* Open the log file */
+   openlog ("customdaemon", LOG_PID, LOG_DAEMON);
+   syslog (LOG_NOTICE, "Daemon started.");
+   closelog();
+ 
+   return daemon_work();
 }
