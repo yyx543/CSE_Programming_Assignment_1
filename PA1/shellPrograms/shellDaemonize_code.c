@@ -13,7 +13,7 @@
 #include "shellPrograms.h"
 
 //TODO: change to appropriate path
-char *path = "./logfile_test.txt";
+char *path = "/home/jk/PA1/PA1/logfile_test.txt";
 
 /*This function summons a daemon process out of the current process*/
 static int create_daemon() {
@@ -22,13 +22,10 @@ static int create_daemon() {
 
     // 1. Fork() from the parent process
     pid_t pid = fork();
-    printf("changing file descriptors: forked\t");
 
     if (pid == -1) {
         printf("Fork failed!\n");
-
     } else if (pid == 0) {
-        printf("why can't you see me?");
         // 3. On child process (this is intermediate process), call setsid() so that the child becomes session leader to lose the controlling TTY
         setsid();
 
@@ -38,9 +35,9 @@ static int create_daemon() {
 
         // 5. Fork() again, parent (the intermediate) process terminates
         pid_t pid2 = fork();
+        
         if (pid2 == -1) {
             printf("Fork 2 failed!\n");
-
         } else if (pid2 == 0) {
             // 6. Child process (the daemon) set new file permissions using umask(0). Daemon's PPID at this point is 1 (the init)
             umask(0);
@@ -51,22 +48,14 @@ static int create_daemon() {
                 close(x);
             }
 
-            // Either:
-            close(STDIN_FILENO);
-            close(STDOUT_FILENO);
-            close(STDERR_FILENO);
             open("/dev/null", O_RDONLY);
             open("/dev/null", O_WRONLY);
             open("/dev/null", O_RDWR);
 
-            // Or:
-            // int df = open("/dev/null", O_RDWR);
-            // dup2(df, STDIN_FILENO);
-            // dup2(df, STDOUT_FILENO);
-            // dup2(df, STDERR_FILENO);
-            // close(df);
+        } else if (pid2 > 0) {
+            // 2. Close intermediate with exit(1)
+            exit(1);
         }
-
     } else if (pid > 0) {
         // 2. Close parent with exit(1)
         exit(1);

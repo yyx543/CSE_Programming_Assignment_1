@@ -26,7 +26,7 @@ int shellCountLine_code(char **args)
     // 6. Close the FILE*
     fclose(fp);
     // 7. Print out how many lines are there in this particular filename
-    printf("There are %i\n lines", count);
+    printf("There are %i lines\n", count);
     // 8. Return 1, to exit program
 
     return 1;
